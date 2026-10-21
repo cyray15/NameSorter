@@ -2,7 +2,7 @@
 
 A .NET 10 console application that sorts newline-delimited person names by **last name, then by given names**. Beyond the algorithm, this repository shows a maintainable delivery process: readable architecture, focused tests, documented engineering decisions, Conventional Commits, pull request review, and automated CI.
 
-> **Status: starter scaffold.** The CLI shell and its tests are present; the parser, sorting logic and output writer are intentionally not implemented yet. The commands describing sorting below are the **target behavior**, not a claim that the unfinished scaffold works end-to-end.
+The parser and sorting workflow are implemented and covered by unit tests. The command-line app prints the sorted list and overwrites `sorted-names-list.txt` in the current working directory.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ A .NET 10 console application that sorts newline-delimited person names by **las
 ## Repository layout
 
 ```text
-src/NameSorter/             Console entry point, parsing and sorting (planned)
+src/NameSorter/             Console entry point and focused name parsing/sorting classes
 tests/NameSorter.Tests/     Unit and integration tests
 samples/                    Example input and expected output
 .github/workflows/          CI build, test, formatting and PR validation
@@ -44,8 +44,6 @@ dotnet build NameSorter.slnx -c Release --no-restore
 dotnet test NameSorter.slnx -c Release --no-restore
 dotnet run --project src/NameSorter -- --help
 ```
-
-Target command after the sorting implementation is complete:
 
 ```powershell
 dotnet run --project src/NameSorter -- ./samples/unsorted-names-list.txt
@@ -85,7 +83,7 @@ Janet Parsons
 | Input/output errors | Explain on stderr and exit nonzero |
 | Capacity | Verify on at least 1,000 names |
 
-These decisions are implementation targets, not yet tested behavior. The project favors a pure parser and comparer, with I/O confined to the CLI workflow. Avoid abstractions not required by the small problem domain.
+The project keeps name validation, parsing, comparison, and sorting in focused components; file and console I/O stay at the CLI boundary. The parser is a pure function and the comparer is independently testable. Dependency injection is limited to the sorter’s comparison policy rather than adding interfaces or a container for this small problem domain.
 
 ## Collaboration and versioning
 
@@ -95,4 +93,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), [docs/ARCHITECTURE.md](docs/ARCHITECTUR
 
 ## Assessment handoff
 
-The code is not ready for evaluation until parsing/sorting/output and their tests are implemented, the sample run is verified, and CI is green. Provide the reviewer this repo URL and straightforward run commands. Do not commit credentials or local/generated build files.
+Before assessment handoff, run the documented build and test commands and verify that the sample run matches the expected output. Provide the reviewer this repo URL and straightforward run commands. Do not commit credentials or local/generated build files.

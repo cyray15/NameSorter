@@ -17,3 +17,6 @@ csharp_style_namespace_declarations = file_scoped:warning
 csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_diagnostic.IDE0005.severity = warning
+
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none

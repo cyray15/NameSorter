@@ -1,0 +1,51 @@
+workflow: GitFlow/v1
+mode: ContinuousDelivery
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatchTag
+tag-prefix: '[vV]?'
+commit-message-incrementing: Enabled
+major-version-bump-message: '\+semver:\s?(breaking|major)'
+minor-version-bump-message: '\+semver:\s?(feature|minor)'
+patch-version-bump-message: '\+semver:\s?(fix|patch)'
+no-bump-message: '\+semver:\s?(none|skip)'
+tag-pre-release-weight: 60000
+branches:
+  main:
+    mode: ContinuousDelivery
+    label: ''
+    increment: Patch
+  develop:
+    mode: ContinuousDelivery
+    label: alpha
+    increment: Minor
+  feature:
+    mode: ContinuousDelivery
+    label: '{BranchName}'
+    increment: Inherit
+  release:
+    mode: ContinuousDelivery
+    label: beta
+    increment: None
+    prevent-increment:
+      of-merged-branch: true
+  hotfix:
+    mode: ContinuousDelivery
+    label: hotfix
+    increment: Patch
+  work:
+    regex: '^(fix|docs|chore|ci|test|refactor)[/](?<BranchName>.+)$'
+    mode: ContinuousDelivery
+    label: '{BranchName}'
+    increment: Inherit
+    source-branches:
+      - main
+      - develop
+  dev:
+    regex: '^dev[/-](?<BranchName>.+)$'
+    mode: ContinuousDelivery
+    label: dev
+    increment: Patch
+    source-branches:
+      - main
+      - develop
+    pre-release-weight: 30000

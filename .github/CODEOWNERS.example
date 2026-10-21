@@ -1,0 +1,4 @@
+# Copy to .github/CODEOWNERS if another reviewer is available and owns the listed paths.
+# Avoid making yourself the only mandatory approver.
+/.github/ @REPLACE_WITH_REVIEWER
+/docs/ @REPLACE_WITH_REVIEWER

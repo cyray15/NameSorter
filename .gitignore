@@ -1,0 +1,13 @@
+# Build, IDE, test and local results
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+TestResults/
+**/TestResults/
+*.user
+*.suo
+*.log
+.DS_Store
+/sorted-names-list.txt

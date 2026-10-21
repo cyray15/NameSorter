@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/NameSorter/NameSorter.csproj" />
+  <Project Path="tests/NameSorter.Tests/NameSorter.Tests.csproj" />
+</Solution>

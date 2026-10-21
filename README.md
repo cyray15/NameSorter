@@ -1,96 +1,105 @@
-# Name Sorter — Dye & Durham Coding Assessment
+# Name Sorter
 
-A .NET 10 console application that sorts newline-delimited person names by **last name, then by given names**. Beyond the algorithm, this repository shows a maintainable delivery process: readable architecture, focused tests, documented engineering decisions, Conventional Commits, pull request review, and automated CI.
+**Dye & Durham coding assessment** · .NET 10 console application · C#
 
-The parser and sorting workflow are implemented and covered by unit tests. The command-line app prints the sorted list and overwrites `sorted-names-list.txt` in the current working directory.
+A small, testable CLI that reads a file of names, sorts by **last name first**, then by each **given name**, prints the sorted list, and writes the same result to `sorted-names-list.txt`.
 
-## Requirements
+The implementation emphasizes clarity for the next developer: focused responsibilities, deterministic sorting, automated tests, and a pull-request workflow with required checks.
 
-- Accept an input text-file path as a command-line argument.
-- Every name contains **1–3 given names and exactly one last name**.
-- Sort ascending by surname, then first given name, then any additional given names.
-- Display sorted names on stdout and overwrite `sorted-names-list.txt` in the current working directory.
-- Handle at least 1,000 names.
+## Quick start
 
-## Stack
+**Prerequisite:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 
-- .NET 10 LTS, C#, nullable reference types, built-in analyzers
-- xUnit v3 (Microsoft Testing Platform)
-- GitHub Actions for compilation, tests, formatting and PR-policy checks
-- GitVersion for semantic versions, plus Conventional Commits
+From the repository root:
 
-## Repository layout
-
-```text
-src/NameSorter/             Console entry point and focused name parsing/sorting classes
-tests/NameSorter.Tests/     Unit and integration tests
-samples/                    Example input and expected output
-.github/workflows/          CI build, test, formatting and PR validation
-.github/pull_request_template.md
-scripts/                    Git / PR policy validation
-docs/                       Architecture, versioning and bootstrap guide
-GitVersion.yml              Semantic version calculation
-CONTRIBUTING.md             Branch, commit and review conventions
+```powershell
+git clone https://github.com/cyray15/NameSorter.git
+cd NameSorter
+dotnet run --project src/NameSorter -- ./samples/unsorted-names-list.txt
 ```
 
-## Build and run
+The application prints:
 
-Prerequisite: [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+```text
+Marin Alvarez
+Adonis Julius Archer
+Zoe Alice Archer
+Janet Parsons
+```
+
+It also **overwrites** `./sorted-names-list.txt` in the **current working directory** with exactly those lines. To inspect the file in PowerShell:
+
+```powershell
+Get-Content ./sorted-names-list.txt
+```
+
+For CLI help, run `dotnet run --project src/NameSorter -- --help`. No database, external service, credentials, Docker, or deployment environment is required.
+
+## Assessment requirements
+
+| Requirement | Implementation |
+| --- | --- |
+| Input | One command-line argument: path to a text file, one person per line |
+| Name structure | Exactly one last name, preceded by **1–3 given names** |
+| Sort order | Ascending last name, followed by given names in sequence |
+| Output | Print each sorted name and overwrite `sorted-names-list.txt` |
+| Volume | Supports at least 1,000 input names |
+| Invalid input | Report a useful error on stderr and exit with a nonzero code |
+
+**Documented behavior and trade-offs:** repeated whitespace is normalized; blank lines are ignored; duplicate names are preserved. A nonblank line with fewer than two or more than four name tokens is rejected with its line number. Comparison uses `OrdinalIgnoreCase` with an ordinal tie-break for deterministic, culture-independent results—not locale-sensitive alphabetical collation. The application sorts the in-memory list using the .NET comparison APIs.
+
+## Build, quality checks and tests
+
+From the repository root:
 
 ```powershell
 dotnet restore NameSorter.slnx
 dotnet format NameSorter.slnx --verify-no-changes --no-restore
 dotnet build NameSorter.slnx -c Release --no-restore
 dotnet test NameSorter.slnx -c Release --no-restore
-dotnet run --project src/NameSorter -- --help
 ```
 
-```powershell
-dotnet run --project src/NameSorter -- ./samples/unsorted-names-list.txt
-# Prints sorted names and overwrites ./sorted-names-list.txt
-```
+The test project uses **xUnit v3**. Test cases cover input parsing, whitespace, the 1–3 given-name rule, comparison order, duplicates, invalid input, and a 1,000-name sample. The GitHub Actions pipeline additionally runs the executable against `samples/unsorted-names-list.txt` and verifies that both stdout and the overwritten file match `samples/expected-sorted-names-list.txt`.
 
-### Target example
+**CI checks:** [Build, test & format](https://github.com/cyray15/NameSorter/actions/workflows/ci.yml) and [PR Policy](https://github.com/cyray15/NameSorter/actions/workflows/pr-policy.yml). Both must pass for protected-branch PRs.
 
-Input:
+## Design and project structure
 
 ```text
-Janet Parsons
-Adonis Julius Archer
-Marin Alvarez
-Zoe Alice Archer
+NameSorter.slnx
+src/NameSorter/
+  Program.cs              # CLI validation, file/console I/O, exit codes
+  CommandLineOptions.cs   # Parse required input path
+  FullName.cs             # Validated name data
+  FullNameParser.cs       # Parse name tokens without I/O
+  FullNameComparer.cs     # Compare last name then each given name
+  NameSortService.cs      # Validate lines and return sorted names
+tests/NameSorter.Tests/   # Unit tests for the components above
+samples/                  # Input and expected-output fixtures
+.github/workflows/        # Build/test/format/smoke test and PR policy
+scripts/                  # PR title, branch and commit-message checks
+docs/                     # Architecture and branching decisions
+GitVersion.yml            # GitFlow-based semantic version calculation
+CONTRIBUTING.md           # Standards and local development workflow
 ```
 
-Output (both console and file):
+This deliberately remains **one small application project plus a test project**. Parsing and comparison are pure and separately testable; file-system concerns stay at the CLI boundary. Additional layers, abstractions, or DI frameworks are unnecessary for the problem. For rationale and edge cases, see [architecture and decisions](docs/ARCHITECTURE.md).
 
-```text
-Marin Alvarez
-Adonis Julius Archer
-Zoe Alice Archer
-Janet Parsons
-```
+## Collaboration and release standards
 
-## Behavior decisions to test
+- **Branches:** `main` contains stable, reviewer-facing code; `develop` integrates feature work. Use short-lived branches such as `feature/name-sorting`, `fix/edge-case`, or `docs/readme`.
+- **Commits and PR titles:** [Conventional Commits](https://www.conventionalcommits.org/), for example `feat(sort): order names by surname` or `test(sort): handle duplicate names`.
+- **Pull requests:** use the PR template and required checks before merging. The repository ruleset protects `main` and `develop` from direct changes and force pushes.
+- **Versioning:** `GitVersion.yml` calculates versions from branches, tags and explicit `+semver:` directives. GitVersion does **not** publish releases or deploy software.
 
-| Scenario | Intended behavior |
-| --- | --- |
-| Ordering | OrdinalIgnoreCase comparisons for platform-independent results, followed by ordinal tie-breaking |
-| Repeated whitespace | Normalize to one separator, trim both ends |
-| Duplicate names | Preserve them |
-| Name length | Reject nonblank lines that do not have 2–4 tokens, with a line-numbered message |
-| Blank lines | Ignore them |
-| Empty input | Produce empty output; overwrite an empty result file |
-| Input/output errors | Explain on stderr and exit nonzero |
-| Capacity | Verify on at least 1,000 names |
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [branching, versioning and releases](docs/BRANCHING-AND-RELEASES.md) for detailed conventions.
 
-The project keeps name validation, parsing, comparison, and sorting in focused components; file and console I/O stay at the CLI boundary. The parser is a pure function and the comparer is independently testable. Dependency injection is limited to the sorter’s comparison policy rather than adding interfaces or a container for this small problem domain.
+## Reviewer handoff
 
-## Collaboration and versioning
+1. Clone the repository and install the .NET 10 SDK.
+2. Run the quick-start command and compare stdout with `samples/expected-sorted-names-list.txt`.
+3. Confirm that `sorted-names-list.txt` is overwritten with the expected result.
+4. Run the formatting, Release build and test commands above, then inspect the GitHub Actions history and the focused source/test files.
 
-Use `main` as the stable submission branch and `develop` for integration. Make changes in `feature/name-parser`, `feature/name-sorting`, `fix/...`, `docs/...` branches and open focused PRs. Follow Conventional Commits: `feat(parser): validate name parts`, `test(sort): cover duplicate surnames`, `ci: add quality gates`.
+All required behavior runs locally without external dependencies. The stable submission branch is [`main`](https://github.com/cyray15/NameSorter/tree/main).
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/BRANCHING-AND-RELEASES.md](docs/BRANCHING-AND-RELEASES.md) for details. GitVersion computes versions; it does not perform deployment.
-
-## Assessment handoff
-
-Before assessment handoff, run the documented build and test commands and verify that the sample run matches the expected output. Provide the reviewer this repo URL and straightforward run commands. Do not commit credentials or local/generated build files.

@@ -1,5 +1,3 @@
-using NameSorter;
-
 namespace NameSorter.Tests;
 
 public sealed class CommandLineOptionsTests

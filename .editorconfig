@@ -18,5 +18,6 @@ csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_diagnostic.IDE0005.severity = warning
 
+# Given_When_Then test names improve readability; CA1707 is suppressed for tests only.
 [tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none

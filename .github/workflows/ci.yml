@@ -34,6 +34,18 @@ jobs:
         run: dotnet build NameSorter.slnx -c Release --no-restore
       - name: Test
         run: dotnet test NameSorter.slnx -c Release --no-restore
+      - name: Smoke test CLI sample and output overwrite
+        shell: bash
+        run: |
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          printf 'stale output\n' > "$workdir/sorted-names-list.txt"
+          (
+            cd "$workdir"
+            dotnet run --no-build -c Release --project "$GITHUB_WORKSPACE/src/NameSorter/NameSorter.csproj" -- "$GITHUB_WORKSPACE/samples/unsorted-names-list.txt" > "$workdir/stdout.txt"
+          )
+          diff -u "$GITHUB_WORKSPACE/samples/expected-sorted-names-list.txt" "$workdir/stdout.txt"
+          diff -u "$GITHUB_WORKSPACE/samples/expected-sorted-names-list.txt" "$workdir/sorted-names-list.txt"
       - name: Calculate semantic version (push builds)
         if: github.event_name == 'push'
         run: |

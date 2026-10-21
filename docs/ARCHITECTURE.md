@@ -4,18 +4,18 @@
 
 Sort a newline-delimited list of people by last name, followed by their given names in order. Print the result and overwrite `sorted-names-list.txt` with matching content. Make it easy for another engineer to locate each behavior.
 
-## Proposed logical components
+## Logical components
 
 ```text
 Program (composition / exit codes)
-  ├─ CLI argument validation
-  ├─ File reader
-  ├─ Name parser / value type
-  ├─ Pure comparer / sorter
-  └─ Output formatter / writer
+  ├─ CommandLineOptions (CLI argument validation)
+  ├─ FullName (validated name value)
+  ├─ FullNameParser (pure parsing)
+  ├─ FullNameComparer (pure comparison)
+  └─ NameSortService (line validation and sorting)
 ```
 
-These components should start in **one console project**; adding extra projects, interfaces, DI containers or cloud services would not help a sorting exercise. The comparer should be pure so correctness can be checked without file I/O; use integration tests for the application boundary.
+These components live in **one console project**; extra projects, interfaces, DI containers or cloud services would not help this sorting exercise. The comparer and parser are pure, so correctness can be checked without file I/O. The CLI owns reading and writing files and reporting errors.
 
 ## Behavior contracts and reasoning
 
@@ -33,6 +33,11 @@ These components should start in **one console project**; adding extra projects,
 
 Ordinal ordering is predictable, **not locale-aware alphabetical collation**. If requirements change to linguistic ordering, make that an explicit decision supported by tests.
 
-## Status
+## SOLID choices
 
-The first scaffold intentionally implements CLI validation only. Parsing, sorting, output writing, and behavior-focused tests are remaining work and should be delivered in dedicated PRs. Remove this status section or mark it complete only after verification.
+- Each class owns one concern: name validation, parsing, comparison, sorting, or command-line validation.
+- Sorting depends on the comparer supplied at construction, so ordering policy is explicit and independently testable.
+- The parser is static because it has no state or dependencies; introducing an interface solely to make it injectable would add ceremony without flexibility.
+- File and console operations remain at the application boundary rather than leaking into the name model or sorting service.
+
+The tests are grouped by the class under test. CLI behavior and file output should also be verified with the documented sample run.

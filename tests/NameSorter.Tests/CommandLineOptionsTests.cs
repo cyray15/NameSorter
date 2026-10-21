@@ -3,7 +3,7 @@ namespace NameSorter.Tests;
 public sealed class CommandLineOptionsTests
 {
     [Fact]
-    public void TryGetInputPath_ReturnsPath_WhenOnePathIsSupplied()
+    public void TryGetInputPath_GivenOnePath_WhenCalled_ThenReturnsThatPath()
     {
         var result = CommandLineOptions.TryGetInputPath(["./names.txt"], out var path);
 
@@ -16,7 +16,7 @@ public sealed class CommandLineOptionsTests
     [InlineData("")]
     [InlineData("--help")]
     [InlineData("one.txt", "two.txt")]
-    public void TryGetInputPath_RejectsInvalidArguments(params string[] arguments)
+    public void TryGetInputPath_GivenInvalidArguments_WhenCalled_ThenRejectsArguments(params string[] arguments)
     {
         var result = CommandLineOptions.TryGetInputPath(arguments, out var path);
 
